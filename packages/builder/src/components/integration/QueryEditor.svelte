@@ -19,6 +19,10 @@
   export let mode
   export let editorHeight = 500
   // export let parameters = []
+  export const getCaretPosition = () => ({
+    start: refs.editor.selectionStart,
+    end: refs.editor.selectionEnd,
+  })
 
   let width
   let height
@@ -122,6 +126,7 @@
       opts.extraKeys = {
         Tab: tab,
         "Shift-Tab": tab,
+        "Ctrl-Space": "autocomplete"
       }
 
     // Creating a text editor is a lot of work, so we yield
@@ -130,8 +135,24 @@
 
     if (destroyed) return
 
+    CodeMirror.hint.svelte = function(cm) {
+      var inner = { from: cm.getCursor(), to: cm.getCursor(), list: [] };
+      inner.list.push("bozo");
+      return inner;
+    }
+
     CodeMirror.commands.autocomplete = function (cm) {
-      CodeMirror.showHint(cm, CodeMirror.hint.javascript)
+      switch(mode) {
+        case 'javascript':
+          CodeMirror.showHint(cm, CodeMirror.hint.javascript)
+          break;
+        case 'sql':
+          CodeMirror.showHint(cm, CodeMirror.hint.sql)
+          break;
+        case 'svelte':
+          CodeMirror.showHint(cm, CodeMirror.hint.svelte)
+          break;
+      }
     }
 
     editor = CodeMirror.fromTextArea(refs.editor, opts)
@@ -170,7 +191,7 @@
   <Label small>{label}</Label>
 {/if}
 <div style={`--code-mirror-height: ${editorHeight}px`}>
-  <textarea tabindex="0" bind:this={refs.editor} readonly {value} />
+  <textarea tabindex="0" bind:this={refs.editor} readonly {value} ></textarea>
 </div>
 
 <style>

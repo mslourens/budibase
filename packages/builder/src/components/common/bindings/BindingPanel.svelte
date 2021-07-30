@@ -1,11 +1,12 @@
 <script>
   import groupBy from "lodash/fp/groupBy"
-  import { Search, TextArea, DrawerContent } from "@budibase/bbui"
+  import { Search, DrawerContent, Body } from "@budibase/bbui"
   import { createEventDispatcher } from "svelte"
   import { isValid } from "@budibase/string-templates"
-  import { readableToRuntimeBinding } from "builderStore/dataBinding"
+  import { readableToRuntimeBinding, runtimeToReadableBinding } from "builderStore/dataBinding"
   import { handlebarsCompletions } from "constants/completions"
   import { addToText } from "./utils"
+  import Editor from "components/integration/QueryEditor.svelte"
 
   const dispatch = createEventDispatcher()
 
@@ -16,7 +17,9 @@
   let helpers = handlebarsCompletions()
   let getCaretPosition
   let search = ""
+  let preview = ""
 
+  $: preview = runtimeToReadableBinding(bindableProperties, value)
   $: valid = isValid(readableToRuntimeBinding(bindableProperties, value))
   $: dispatch("change", value)
   $: ({ context } = groupBy("type", bindableProperties))
@@ -77,18 +80,24 @@
     </div>
   </svelte:fragment>
   <div class="main">
-    <TextArea
-      bind:getCaretPosition
+    <Editor
+      mode="svelte"
       bind:value
       placeholder="Add text, or click the objects on the left to add them to the textbox."
     />
+
     {#if !valid}
       <p class="syntax-error">
         Current Handlebars syntax is invalid, please check the guide
         <a href="https://handlebarsjs.com/guide/">here</a>
         for more details.
       </p>
+    {:else}
+      <div class="heading">Preview</div>
+      <Body size="m">{preview}</Body>
     {/if}
+
+
   </div>
 </DrawerContent>
 
