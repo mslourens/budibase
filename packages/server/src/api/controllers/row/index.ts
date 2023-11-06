@@ -17,8 +17,8 @@ import {
   GetRowResponse,
   ValidateResponse,
   ExportRowsRequest,
-  ExportRowsResponse,
-} from "@budibase/types"
+  ExportRowsResponse, DeleteAllRows
+} from "@budibase/types";
 import * as utils from "./utils"
 import { gridSocket } from "../../../websockets"
 import { addRev } from "../public/utils"
@@ -26,6 +26,7 @@ import { fixRow } from "../public/rows"
 import sdk from "../../../sdk"
 import * as exporters from "../view/exporters"
 import { apiFileReturn } from "../../../utilities/fileSystem"
+import { getAllRows } from "./internal";
 export * as views from "./views"
 
 function pickApi(tableId: any) {
@@ -131,6 +132,10 @@ function isDeleteRows(input: any): input is DeleteRows {
   return input.rows !== undefined && Array.isArray(input.rows)
 }
 
+function isDeleteAllRows(input: any): input is DeleteAllRows {
+  return input.rows !== undefined && input.rows == 'all'
+}
+
 function isDeleteRow(input: any): input is DeleteRow {
   return input._id !== undefined
 }
@@ -167,11 +172,18 @@ async function deleteRows(ctx: UserCtx<DeleteRowRequest>) {
   await quotas.removeRows(rows.length)
 
   for (let row of rows) {
+    console.log('delete row', row)
     ctx.eventEmitter && ctx.eventEmitter.emitRow(`row:delete`, appId, row)
     gridSocket?.emitRowDeletion(ctx, row)
   }
 
   return rows
+}
+
+async function deleteAllRows(ctx: UserCtx) {
+  const rows = await getAllRows(ctx)
+  ctx.request.body.rows = rows
+  return deleteRows(ctx)
 }
 
 async function deleteRow(ctx: UserCtx<DeleteRowRequest>) {
@@ -195,6 +207,8 @@ export async function destroy(ctx: UserCtx<DeleteRowRequest>) {
 
   if (isDeleteRows(ctx.request.body)) {
     response = await deleteRows(ctx)
+  } else if (isDeleteAllRows(ctx.request.body)) {
+    response = await deleteAllRows(ctx)
   } else if (isDeleteRow(ctx.request.body)) {
     const deleteResp = await deleteRow(ctx)
     response = deleteResp.response

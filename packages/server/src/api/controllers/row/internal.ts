@@ -1,9 +1,9 @@
 import * as linkRows from "../../../db/linkedRows"
 import {
-  generateRowID,
+  generateRowID, getRowParams,
   getTableIDFromRowID,
-  InternalTables,
-} from "../../../db/utils"
+  InternalTables
+} from "../../../db/utils";
 import * as userController from "../user"
 import {
   cleanupAttachments,
@@ -24,6 +24,7 @@ import {
   UserCtx,
 } from "@budibase/types"
 import sdk from "../../../sdk"
+import { quotas } from "@budibase/pro";
 
 export async function patch(ctx: UserCtx<PatchRowRequest, PatchRowResponse>) {
   const tableId = utils.getTableId(ctx)
@@ -222,6 +223,16 @@ export async function bulkDestroy(ctx: UserCtx) {
   await updateRelatedFormula(table, processedRows)
   await Promise.all(updates)
   return { response: { ok: true }, rows: processedRows }
+}
+
+export async function getAllRows(ctx: UserCtx) {
+  const db = context.getAppDB()
+  const rowsData = await db.allDocs(
+    getRowParams(ctx.params.tableId, null, {
+      include_docs: true,
+    })
+  )
+  return rowsData.rows.map(row => row.doc)
 }
 
 export async function fetchEnrichedRow(ctx: UserCtx) {

@@ -98,6 +98,11 @@ export const createActions = context => {
     return await getAPI()?.actions.deleteRows(rows)
   }
 
+  // Deletes all rows from the datasource
+  const deleteAllRows = async () => {
+    return await getAPI()?.actions.deleteAllRows()
+  }
+
   // Gets a single row from a datasource
   const getRow = async id => {
     return await getAPI()?.actions.getRow(id)
@@ -122,6 +127,7 @@ export const createActions = context => {
         addRow,
         updateRow,
         deleteRows,
+        deleteAllRows,
         getRow,
         isDatasourceValid,
         canUseColumn,

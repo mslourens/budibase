@@ -25,6 +25,12 @@ export const createActions = context => {
     })
   }
 
+  const deleteAllRows = async () => {
+    await API.deleteAllRows({
+      tableId: get(datasource).tableId,
+    })
+  }
+
   const isDatasourceValid = datasource => {
     return datasource?.type === "table" && datasource?.tableId
   }
@@ -57,6 +63,7 @@ export const createActions = context => {
         addRow: saveRow,
         updateRow: saveRow,
         deleteRows,
+        deleteAllRows,
         getRow,
         isDatasourceValid,
         canUseColumn,

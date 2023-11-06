@@ -82,6 +82,19 @@ export const buildRowEndpoints = API => ({
   },
 
   /**
+   * Deletes all rows from an internal table.
+   * @param tableId the table or view ID to delete the rows from
+   */
+  deleteAllRows: async ({ tableId }) => {
+    return await API.delete({
+      url: `/api/${tableId}/rows`,
+      body: {
+        rows: 'all',
+      },
+    })
+  },
+
+  /**
    * Exports rows.
    * @param tableId the table ID to export the rows from
    * @param rows the array of rows to export

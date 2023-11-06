@@ -405,8 +405,8 @@ export const createActions = context => {
 
   // Deletes all rows
   const deleteAllRows = async () => {
-    const allRows = get(rows)
-    await deleteRows(allRows)
+    await datasource.actions.deleteAllRows()
+    rows.set([])
   }
 
   // Local handler to process new rows inside the fetch, and append any new
